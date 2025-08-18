@@ -1,0 +1,117 @@
+//
+//  Projektwoche1App.swift
+//  Projektwoche1
+//
+//  Created by Nikolas Kato 18.08.2025
+//
+
+import SwiftUI
+import SwiftData
+
+// MARK: - QuoteCraftApp
+/// Haupt-App Struktur für QuoteCraft
+/// Konfiguriert SwiftData Container und initialisiert App-Dependencies
+@main
+struct QuoteCraftApp: App {
+    
+    // MARK: - Properties
+    
+    /// SwiftData ModelContainer für die gesamte App
+    /// Wird einmal erstellt und an alle Views weitergegeben
+    @StateObject private var dataManager: DataManager
+    
+    // MARK: - Initializer
+    
+    /// Initialisiert die App mit SwiftData Container
+    /// Hier wird die komplette Datenbank-Konfiguration vorgenommen
+    init() {
+        // Erstelle SwiftData ModelContainer über Configurator
+        let container = SwiftDataConfigurator.createQuoteCraftContainer()
+        
+        // Initialisiere DataManager mit ModelContext
+        let dataManager = DataManager(modelContext: container.mainContext)
+        
+        // StateObject-Wrapper für SwiftUI
+        self._dataManager = StateObject(wrappedValue: dataManager)
+    }
+    
+    // MARK: - App Body
+    
+    /// Der Hauptinhalt der App
+    /// Definiert die App-Struktur und injiziert Dependencies
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .environmentObject(dataManager)
+                .task {
+                    // Initialisiere App beim ersten Start
+                    await initializeApp()
+                }
+        }
+        .modelContainer(dataManager.modelContext.container)
+    }
+}
+
+// MARK: - App Initialization
+private extension QuoteCraftApp {
+    
+    /// Initialisiert die App beim ersten Start
+    /// Führt Setup-Tasks aus die nach App-Launch benötigt werden
+    func initializeApp() async {
+        print("QuoteCraft App wird initialisiert...")
+        
+        // Prüfe ob bereits Daten vorhanden sind
+        await checkForExistingData()
+        
+        // Weitere Initialisierung hier möglich:
+        // - Analytics Setup
+        // - Crash Reporting
+        // - User Defaults Migration
+        // - etc.
+        
+        print("QuoteCraft App erfolgreich initialisiert!")
+    }
+    
+    /// Prüft ob bereits Quotes oder Favoriten in der Datenbank vorhanden sind
+    /// Kann für zukünftige Migrations-Logic verwendet werden
+    func checkForExistingData() async {
+        do {
+            let existingQuotes = try dataManager.getAllSavedQuotes()
+            let existingFavorites = try dataManager.getFavoriteQuotes()
+            
+            print("Gefunden: \(existingQuotes.count) gespeicherte Quotes")
+            print(" Gefunden: \(existingFavorites.count) Favoriten")
+            
+            // Zukünftige Logic für Daten-Migration oder Setup hier
+            
+        } catch {
+            print("Warnung beim Prüfen vorhandener Daten: \(error)")
+            // Nicht kritisch - App kann trotzdem starten
+        }
+    }
+}
+
+// MARK: - Debug Helpers
+#if DEBUG
+extension QuoteCraftApp {
+    
+    /// Debug-Helper um Container-Informationen zu loggen
+    /// Nur in Debug-Builds verfügbar
+    static func logContainerInfo(_ container: ModelContainer) {
+        print("🗃️ ModelContainer erstellt")
+        
+        // Schritt-für-Schritt Configuration-Behandlung
+        guard let configuration = container.configurations.first else {
+            print("Container URL: No configuration found")
+            print("In Memory: Unknown")
+            return
+        }
+        
+        // URL ist nicht optional in ModelConfiguration
+        print("Container URL: \(configuration.url.absoluteString)")
+        
+        // Memory-Status
+        print("In Memory: \(configuration.isStoredInMemoryOnly)")
+    }
+}
+#endif

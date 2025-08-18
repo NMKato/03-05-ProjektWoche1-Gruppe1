@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  Projektwoche1
 //
-//  Created by Jana Jansen on 24.01.25.
+//    Created by Nikolas Kato 18.08.2025
 //
 
 import SwiftUI
