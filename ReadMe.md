@@ -7,6 +7,9 @@
 
 import Foundation
 
+## UML Diagram
+
+![UML Diagram](./Assets.xcassets/UML%20Diagram%20QutoeCraftApp.imageset/UML%20Diagram%20QutoeCraftApp.png)
 
 QuoteCraft
 A native iOS app for displaying and managing inspirational quotes with favorites functionality, built with SwiftUI and SwiftData.
