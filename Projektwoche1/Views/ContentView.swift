@@ -4,7 +4,7 @@
 //
 //    Created by Nikolas Kato 18.08.2025
 //    Created by Florica Girisci 19.08.2025
-//
+//    Created by Waldemar Dietler 20.08.2025
 
 import SwiftUI
 import SwiftData
@@ -13,6 +13,7 @@ struct ContentView: View {
     
     // MARK: - Dependencies (Abhängigkeiten/Zugehörigkeiten)
     @EnvironmentObject private var quoteVM: QuoteViewModel
+    @State private var showFavorites = false
     
     // MARK: - View
     var body: some View {
@@ -60,7 +61,16 @@ struct ContentView: View {
             }
             .padding()
             .navigationTitle("Quote Craft")
-            
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showFavorites = true
+                    } label: {
+                        Image(systemName: "star.fill")
+                    }
+                    .accessibilityLabel("Favoriten anzeigen")
+                }
+            }
             
         }
         .task {
@@ -68,6 +78,9 @@ struct ContentView: View {
             if quoteVM.currentQuote == nil {
                 quoteVM.loadRandomQuote()
             }
+        }
+        .sheet(isPresented: $showFavorites) {
+            FavoritesView()
         }
     }
 }
