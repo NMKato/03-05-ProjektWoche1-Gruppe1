@@ -21,7 +21,7 @@ struct QuoteCraftApp: App {
     private let modelContainer: ModelContainer
     @StateObject private var dataManager: DataManager
     @StateObject private var quoteViewModel: QuoteViewModel
-    @StateObject private var favoritesViewModel: FavoritesViewModel
+ 
     @State private var isLaunchComplete = false
 
     init() {
@@ -33,13 +33,12 @@ struct QuoteCraftApp: App {
         let dm = DataManager(modelContext: container.mainContext)
         _dataManager = StateObject(wrappedValue: dm)
         _quoteViewModel = StateObject(wrappedValue: QuoteViewModel(dataManager: dm))
-        _favoritesViewModel = StateObject(wrappedValue: FavoritesViewModel(dataManager: dm))
+       
     }
 
     var body: some Scene {
         WindowGroup {
-            ZStack {
-                AppBackground()
+            Group {
                 if !isLaunchComplete {
                     LaunchScreenView(isLaunchComplete: $isLaunchComplete)
                         .transition(.opacity.combined(with: .scale))
@@ -50,7 +49,7 @@ struct QuoteCraftApp: App {
             }
             .environmentObject(dataManager)
             .environmentObject(quoteViewModel)
-            .environmentObject(favoritesViewModel)
+       
             .task { await initializeApp() }
         }
         .modelContainer(modelContainer)                    

@@ -12,55 +12,32 @@ struct MainTabView: View {
     
     var body: some View {
         
-       
-       //   AppBackground()
-              
-        
-            TabView {
-                
-                ContentView()
-                
-                    .tabItem {
-                        Image(systemName: "house")
-                        Text("Start")
-                    }
-                
-            }
-            .frame(width:405)
-           
-            
-              
+        TabView {
+            ContentView()
+                .tabItem {
+               //     Image(systemName: "house")
+                //    Text("Start")
                 }
-           
+            
         }
-    
+       
+    }
+        
+}
 
-// gemeinsemerPreviewContainer
+// Preview
 #Preview {
     let container = SwiftDataConfigurator.createPreviewContainer()
     let dm = DataManager(modelContext: container.mainContext)
-    // quote fm für viewmodel + beispiel quote
     let quoteVM = QuoteViewModel(dataManager: dm)
     
     quoteVM.currentQuote = Quote(
         text: "Vorschau Zitat für TabView",
         author: "Preview Author",
-        category: .motivation)
+        category: .motivation
+    )
     
-    
-    
-    // Platzhalter für favoriteViewModel
-    let favVM = FavoritesViewModel(dataManager: dm)
-    if let q = quoteVM.currentQuote {
-        try? dm.addToFavorites(q)
-        Task { await favVM.loadFavorites() }
-    }
-        return MainTabView()
-            .environmentObject(quoteVM)
-            .environmentObject(favVM)
-            .modelContainer(container)
-        
-   
-    
-    
+    return MainTabView()
+        .environmentObject(quoteVM)
+        .modelContainer(container)
 }

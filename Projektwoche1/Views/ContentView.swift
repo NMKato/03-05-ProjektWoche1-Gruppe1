@@ -2,153 +2,254 @@
 //  ContentView.swift
 //  Projektwoche1
 //
-//    Created by Nikolas Kato 18.08.2025
-//    Created by Florica Girisci 19.08.2025
-//    Created by Waldemar Dietler 20.08.2025
+//  FINAL VERSION: Komplette ViewModel-Integration
+//  Created by Nikolas Kato 18.08.2025
+//  Created by Florica Girisci 19.08.2025
+//  Created by Waldemar Dietler 20.08.2025
 
 import SwiftUI
 import SwiftData
 
 struct ContentView: View {
     
-    // MARK: - Dependencies (Abhängigkeiten/Zugehörigkeiten)
+    // MARK: - Dependencies
     @EnvironmentObject private var quoteVM: QuoteViewModel
-    @State private var showFavorites = false
-    @State private var selectedMood: Mood = .freude
-    @State private var selectedDomain: LifeDomain = .work
+    @Environment(\.modelContext) private var modelContext
+    
+    // MARK: - Computed Properties
+    private var dataManager: DataManager {
+        DataManager(modelContext: modelContext)
+    }
+    
+    private var quoteService: QuoteService {
+        QuoteService()
+    }
     
     // MARK: - View
     var body: some View {
-        
         NavigationStack {
             VStack(spacing: 16) {
                 
-                HStack {
-                    MascotView(mood: selectedMood, domain: selectedDomain, size: 64)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("MUSE")
-                            .font(.headline)
-                        Text("Findet das passende Zitat für Ihre Stimmung.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                }
-                .padding(.bottom, 6)
+                // Header mit Maskottchen
+                headerSection
                 
-                // Auswahl: Stimmung & Bereich
-                Group {
-                    HStack {
-                        Text("Stimmung")
-                            .font(.caption).foregroundStyle(.secondary)
-                        Spacer()
-                    }
-                    Picker("Stimmung", selection: $selectedMood) {
-                        ForEach(Mood.allCases, id: \.self) { m in
-                            Text(m.displayName).tag(m)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-
-                    HStack {
-                        Text("Bereich")
-                            .font(.caption).foregroundStyle(.secondary)
-                        Spacer()
-                    }
-                    Picker("Bereich", selection: $selectedDomain) {
-                        ForEach(LifeDomain.allCases, id: \.self) { d in
-                            Text(d.displayName).tag(d)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                }
-                .padding(.bottom, 6)
+                // Stimmung & Bereich Auswahl
+                selectionSection
                 
-                //Ladezustand
-                if quoteVM.isLoading {
-                    ProgressView("Zitat wird geladen...")
-                    
-                    
-                }
-                // Zitat vorhanden
-                else if let q = quoteVM.currentQuote {
-                    QuoteCard(quoteText: q.text,
-                              author: q.author,
-                              category: q.category,
-                              background: .categoryGradient(q.category),
-                              config: .init(showCategoryBadge: true, showActions: true),
-                              onRefresh: { quoteVM.refreshQuote()},
-                              onToggleFavorite: { quoteVM.toggleFavorite()},
-                              isFavorited: quoteVM.isFavorited
-                    )
-                    .padding(.horizontal)
-                    
-                    
-                }
+                // Hauptinhalt: Zitat oder Loading
+                mainContentSection
                 
-                // falls kein Zitat (fallback)
-                else {
-                    ContentUnavailableView(
-                        "Kein Zitat", systemImage: "quote.bubble",
-                        description: Text("Tippen Sie auf 'neues Zitat'.")
-                    )
-                }
-                // FehlerMeldung optional
-                if let msg = quoteVM.errorMessage {
-                    Text(msg)
-                        .font(.footnote)
-                        .foregroundStyle(.red)
-                        .padding(.top, 4)
-                }
+                // Fehlermeldung
+                errorSection
                 
                 Spacer()
-                
             }
             .padding()
-            .navigationTitle("Quote Craft")
+       //     .navigationTitle("Quote Craft")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        showFavorites = true
+                        quoteVM.showFavoritesSheet()
                     } label: {
                         Image(systemName: "star.fill")
                     }
                     .accessibilityLabel("Favoriten anzeigen")
+                    .foregroundColor(.yellow)
                 }
             }
-            
+         //   .padding()
+            .background { AppBackground() }
+          
         }
         .task {
-            // 1.Zitat bei startladen
+            // Erstes Zitat laden falls keines vorhanden
             if quoteVM.currentQuote == nil {
                 quoteVM.loadRandomQuote()
             }
         }
-        .sheet(isPresented: $showFavorites) {
+        .sheet(isPresented: $quoteVM.showFavorites) {
             FavoritesView()
         }
     }
 }
+
+// MARK: - Subviews
+private extension ContentView {
+    
+    var headerSection: some View {
+        HStack {
+            MascotView(
+                mood: quoteVM.selectedMood,
+                domain: quoteVM.selectedDomain,
+                size: 64
+            )
+            VStack(alignment: .leading, spacing: 2) {
+                Text("„Dein Moment. Dein Zitat.“")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                Text("Clever kuratiert. Von MUSE..")
+                    .font(.caption)
+                    .foregroundStyle(.white)
+            }
+            Spacer()
+        }
+        .padding(.bottom, 6)
+    }
+    
+    var selectionSection: some View {
+        Group {
+            // Stimmung Picker
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Stimmung")
+                        .font(.caption)
+                        .foregroundStyle(.white)
+                    Spacer()
+                    // Aktueller Status anzeigen
+                    Text(quoteVM.currentSelectionText)
+                        .font(.caption2)
+                        .foregroundStyle(.white)
+                }
+                
+                // Stimmung (Glas-Look um den Segmented-Picker)
+                Picker("Stimmung", selection: $quoteVM.selectedMood) {
+                    ForEach(Mood.allCases, id: \.self) { mood in
+                        Text(mood.displayName).tag(mood)
+                        
+                    }
+                }
+                .pickerStyle(.segmented)
+                .tint(.white) // Segment-Farbe auf hellem/dunklem Hintergrund anpassen
+                .padding(6)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(.white.opacity(0.18), lineWidth: 0.5)
+                )
+                .shadow(color: .black.opacity(0.25), radius: 10, y: 3)
+                .onChange(of: quoteVM.selectedMood) { _, newMood in
+                    quoteVM.updateMood(newMood)
+                }
+            }
+            
+            // Bereich Picker (Glass-Look um den Segmented-Picker)
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Bereich")
+                        .font(.caption)
+                        .foregroundStyle(.white)
+                    Spacer()
+                }
+                
+                Picker("Bereich", selection: $quoteVM.selectedDomain) {
+                    ForEach(LifeDomain.allCases, id: \.self) { domain in
+                        Text(domain.displayName).tag(domain)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .tint(.white) // Segment-Farbe auf Ihren Hintergrund abstimmen
+                .padding(6)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(.white.opacity(0.18), lineWidth: 0.5)
+                )
+                .shadow(color: .black.opacity(0.25), radius: 10, y: 3)
+                .onChange(of: quoteVM.selectedDomain) { _, newDomain in
+                    quoteVM.updateDomain(newDomain)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var mainContentSection: some View {
+        if quoteVM.isLoading {
+            // Loading State
+            VStack(spacing: 16) {
+                ProgressView()
+                    .scaleEffect(1.2)
+                Text("Zitat wird geladen...")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, minHeight: 200)
+            
+        } else if let quote = quoteVM.currentQuote {
+            // Quote anzeigen
+            QuoteCard(
+                quote: quote,
+                dataManager: dataManager,
+                quoteService: quoteService,
+                config: .init(showCategoryBadge: true, showActions: true),
+                backgroundStyle: .categoryGradient(quote.category)
+            )
+            .padding(.horizontal)
+            .onReceive(NotificationCenter.default.publisher(for: .init("QuoteRefreshed"))) { notification in
+                if let newQuote = notification.object as? Quote {
+                    quoteVM.currentQuote = newQuote
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .init("FavoriteChanged"))) { notification in
+                if let userInfo = notification.userInfo,
+                   let isFavorited = userInfo["isFavorited"] as? Bool {
+                    quoteVM.isFavorited = isFavorited
+                }
+            }
+            
+        } else {
+            // Empty State
+            ContentUnavailableView(
+                "Kein Zitat verfügbar",
+                systemImage: "quote.bubble",
+                description: Text("Tippen Sie auf 'Neues Zitat' um zu beginnen.")
+            )
+            .frame(maxWidth: .infinity, minHeight: 200)
+        }
+    }
+    
+    @ViewBuilder
+    var errorSection: some View {
+        if let errorMessage = quoteVM.errorMessage {
+            HStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.red)
+                Text(errorMessage)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                Spacer()
+                Button("Dismiss") {
+                    Task {
+                        await quoteVM.clearError()
+                    }
+                }
+                .font(.caption)
+                .buttonStyle(.bordered)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(.red.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .padding(.top, 4)
+        }
+    }
+}
+
 // MARK: - Preview
 #Preview {
-    // 1. in memoryContainer für previews
     let container = SwiftDataConfigurator.createPreviewContainer()
-    
-    // 2. DataManager mit PreviewContext
     let dm = DataManager(modelContext: container.mainContext)
+    let quoteVM = QuoteViewModel(dataManager: dm)
     
-    // 3. QuoteModel erzeugen
-    let vm = QuoteViewModel(dataManager: dm)
+    // Preview-Zitat setzen
+    quoteVM.currentQuote = Quote(
+        text: "Vorschau-Zitat für die optimierte ContentView mit vollständiger ViewModel-Integration.",
+        author: "Preview Author",
+        category: .motivation
+    )
+    quoteVM.isFavorited = false
     
-    // 4. Stabil Beispiel Zitat setzen
-    vm.currentQuote = Quote(text: "Preview Zitat: stabil, sichtbar", author: "Preview Autor", category: .motivation)
-    vm.isFavorited = false
-    
-    // 5. view + EnvironmentObjekt
     return ContentView()
-        .environmentObject(vm)
+        .environmentObject(quoteVM)
         .modelContainer(container)
-    
-    
-    
 }

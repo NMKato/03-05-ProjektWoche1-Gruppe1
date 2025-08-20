@@ -10,11 +10,11 @@ import SwiftUI
 
 // MARK: - QuoteViewModel
 /// ViewModel für die Hauptansicht der QuoteCraft App
-/// Verwaltet aktuelles Zitat und Benutzerinteraktionen
+/// Verwaltet aktuelles Zitat, UI-State und Benutzerinteraktionen
 @MainActor
 final class QuoteViewModel: ObservableObject {
     
-    // MARK: - Published Properties
+    // MARK: - Published Properties (Quote-bezogen)
     
     /// Das aktuell angezeigte Zitat
     @Published var currentQuote: Quote?
@@ -30,6 +30,17 @@ final class QuoteViewModel: ObservableObject {
     
     /// Aktuell ausgewählte Kategorie für Filterung (nil = alle)
     @Published var selectedCategory: Category?
+    
+    // MARK: - Published Properties (UI-State) - NEU
+    
+    /// Aktuell ausgewählte Stimmung des Benutzers
+    @Published var selectedMood: Mood = .freude
+    
+    /// Aktuell ausgewählter Lebensbereich
+    @Published var selectedDomain: LifeDomain = .work
+    
+    /// Status ob Favoriten-Sheet angezeigt wird
+    @Published var showFavorites: Bool = false
     
     // MARK: - Private Properties
     
@@ -48,7 +59,7 @@ final class QuoteViewModel: ObservableObject {
         self.quoteService = QuoteService()
     }
     
-    // MARK: - Public Methods
+    // MARK: - Public Methods (Quote-Operationen)
     
     /// Lädt ein zufälliges Zitat beim App-Start
     /// Wird von ContentView beim onAppear aufgerufen
@@ -61,20 +72,15 @@ final class QuoteViewModel: ObservableObject {
         }
     }
     
-    /// Lädt ein neues zufälliges Zitat (Button-Aktion)
-    /// Unterscheidet sich von loadRandomQuote durch UI-Feedback
+    /// Lädt ein neues Zitat basierend auf aktueller Stimmung und Bereich
+    /// Verwendet selectedMood und selectedDomain für personalisierte Auswahl
     func refreshQuote() {
         Task {
             await performQuoteLoad {
-                let quote: Quote
-                if let selectedCategory = self.selectedCategory {
-                    // Lade Zitat aus gewählter Kategorie
-                    let categoryQuotes = self.quoteService.getQuotesByCategory(selectedCategory)
-                    quote = categoryQuotes.randomElement() ?? self.quoteService.getRandomQuote()
-                } else {
-                    // Lade zufälliges Zitat aus allen Kategorien
-                    quote = self.quoteService.getRandomQuote()
-                }
+                let quote = self.quoteService.getQuote(
+                    mood: self.selectedMood,
+                    domain: self.selectedDomain
+                )
                 await self.setCurrentQuote(quote)
             }
         }
@@ -84,7 +90,18 @@ final class QuoteViewModel: ObservableObject {
     /// - Parameter category: Die gewünschte Kategorie (nil für alle)
     func loadQuotesByCategory(_ category: Category?) {
         selectedCategory = category
-        refreshQuote()
+        Task {
+            await performQuoteLoad {
+                let quote: Quote
+                if let selectedCategory = category {
+                    let categoryQuotes = self.quoteService.getQuotesByCategory(selectedCategory)
+                    quote = categoryQuotes.randomElement() ?? self.quoteService.getRandomQuote()
+                } else {
+                    quote = self.quoteService.getRandomQuote()
+                }
+                await self.setCurrentQuote(quote)
+            }
+        }
     }
     
     /// Togglet den Favoriten-Status des aktuellen Zitats
@@ -95,16 +112,13 @@ final class QuoteViewModel: ObservableObject {
         Task {
             do {
                 if isFavorited {
-                    // Entferne von Favoriten
                     try dataManager.removeFromFavorites(currentQuote)
                     await updateFavoriteStatus(false)
                 } else {
-                    // Füge zu Favoriten hinzu
                     try dataManager.addToFavorites(currentQuote)
                     await updateFavoriteStatus(true)
                 }
                 
-                // Erfolgsmeldung zurücksetzen
                 await clearError()
                 
             } catch {
@@ -133,6 +147,47 @@ final class QuoteViewModel: ObservableObject {
         await MainActor.run {
             errorMessage = nil
         }
+    }
+    
+    // MARK: - Public Methods (UI-State Management) - NEU
+    
+    /// Aktualisiert Stimmung und lädt passendes Zitat
+    /// - Parameter mood: Die neue Stimmung
+    func updateMood(_ mood: Mood) {
+        selectedMood = mood
+        refreshQuote() // Automatisch neues Zitat basierend auf neuer Stimmung
+    }
+    
+    /// Aktualisiert Lebensbereich und lädt passendes Zitat
+    /// - Parameter domain: Der neue Lebensbereich
+    func updateDomain(_ domain: LifeDomain) {
+        selectedDomain = domain
+        refreshQuote() // Automatisch neues Zitat basierend auf neuem Bereich
+    }
+    
+    /// Aktualisiert sowohl Stimmung als auch Bereich
+    /// - Parameters:
+    ///   - mood: Die neue Stimmung
+    ///   - domain: Der neue Lebensbereich
+    func updateMoodAndDomain(mood: Mood, domain: LifeDomain) {
+        selectedMood = mood
+        selectedDomain = domain
+        refreshQuote()
+    }
+    
+    /// Zeigt Favoriten-Sheet an
+    func showFavoritesSheet() {
+        showFavorites = true
+    }
+    
+    /// Versteckt Favoriten-Sheet
+    func hideFavoritesSheet() {
+        showFavorites = false
+    }
+    
+    /// Togglet Favoriten-Sheet Anzeige
+    func toggleFavoritesSheet() {
+        showFavorites.toggle()
     }
 }
 
@@ -194,20 +249,36 @@ private extension QuoteViewModel {
     }
 }
 
-
-// MARK: - Mood/Domain API
+// MARK: - Computed Properties für UI
 extension QuoteViewModel {
-
-    /// Lädt ein Zitat passend zu Stimmung und Lebensbereich.
-    /// - Parameters:
-    ///   - mood: Stimmung (optional; nil => Zufall)
-    ///   - domain: Lebensbereich (optional; nil => Zufall)
-    func refreshQuote(mood: Mood?, domain: LifeDomain?) {
-        Task {
-            await performQuoteLoad {
-                let quote = self.quoteService.getQuote(mood: mood, domain: domain)
-                await self.setCurrentQuote(quote)
-            }
-        }
+    
+    /// Zeigt ob ein Zitat geladen ist
+    var hasQuote: Bool {
+        currentQuote != nil
+    }
+    
+    /// Zeigt ob gerade ein Loading-Vorgang läuft
+    var isIdle: Bool {
+        !isLoading
+    }
+    
+    /// Zeigt ob ein Fehler vorliegt
+    var hasError: Bool {
+        errorMessage != nil
+    }
+    
+    /// Formatierte Anzeige der aktuellen Auswahl
+    var currentSelectionText: String {
+        "\(selectedMood.displayName) • \(selectedDomain.displayName)"
+    }
+    
+    /// Zeigt ob Favoriten-Button verfügbar ist
+    var canToggleFavorite: Bool {
+        hasQuote && isIdle
+    }
+    
+    /// Zeigt ob Refresh-Button verfügbar ist
+    var canRefresh: Bool {
+        isIdle
     }
 }

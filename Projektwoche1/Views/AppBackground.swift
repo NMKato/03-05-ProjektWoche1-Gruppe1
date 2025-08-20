@@ -22,7 +22,7 @@ struct AppBackground: View {
                                             startPoint: .top, endPoint: .bottom))
             }
         }
-        .ignoresSafeArea()
+        .ignoresSafeArea(.container, edges: .all)
     }
 }
 
