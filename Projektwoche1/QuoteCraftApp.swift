@@ -11,46 +11,52 @@ import SwiftData
 // MARK: - QuoteCraftApp
 /// Haupt-App Struktur für QuoteCraft
 /// Konfiguriert SwiftData Container und initialisiert App-Dependencies
+import SwiftUI
+import SwiftData
+
 @main
 struct QuoteCraftApp: App {
-    
-    // MARK: - Properties
-    
-    /// SwiftData ModelContainer für die gesamte App
-    /// Wird einmal erstellt und an alle Views weitergegeben
+
+    // MARK: - Dependencies
+    private let modelContainer: ModelContainer
     @StateObject private var dataManager: DataManager
-    
-    // MARK: - Initializer
-    
-    /// Initialisiert die App mit SwiftData Container
-    /// Hier wird die komplette Datenbank-Konfiguration vorgenommen
+    @StateObject private var quoteViewModel: QuoteViewModel
+    @StateObject private var favoritesViewModel: FavoritesViewModel
+    @State private var isLaunchComplete = false
+
     init() {
-        // Erstelle SwiftData ModelContainer über Configurator
+        // 1) Container einmal erstellen und behalten
         let container = SwiftDataConfigurator.createQuoteCraftContainer()
-        
-        // Initialisiere DataManager mit ModelContext
-        let dataManager = DataManager(modelContext: container.mainContext)
-        
-        // StateObject-Wrapper für SwiftUI
-        self._dataManager = StateObject(wrappedValue: dataManager)
+        self.modelContainer = container
+
+        // 2) DataManager & VMs mit demselben Container/Context aufsetzen
+        let dm = DataManager(modelContext: container.mainContext)
+        _dataManager = StateObject(wrappedValue: dm)
+        _quoteViewModel = StateObject(wrappedValue: QuoteViewModel(dataManager: dm))
+        _favoritesViewModel = StateObject(wrappedValue: FavoritesViewModel(dataManager: dm))
     }
-    
-    // MARK: - App Body
-    
-    /// Der Hauptinhalt der App
-    /// Definiert die App-Struktur und injiziert Dependencies
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(dataManager)
-                .task {
-                    // Initialisiere App beim ersten Start
-                    await initializeApp()
+            ZStack {
+                AppBackground()
+                if !isLaunchComplete {
+                    LaunchScreenView(isLaunchComplete: $isLaunchComplete)
+                        .transition(.opacity.combined(with: .scale))
+                } else {
+                    MainTabView()
+                        .transition(.opacity)
                 }
+            }
+            .environmentObject(dataManager)
+            .environmentObject(quoteViewModel)
+            .environmentObject(favoritesViewModel)
+            .task { await initializeApp() }
         }
-        .modelContainer(dataManager.modelContext.container)
+        .modelContainer(modelContainer)                    
     }
 }
+
 
 // MARK: - App Initialization
 private extension QuoteCraftApp {

@@ -193,3 +193,21 @@ private extension QuoteViewModel {
         }
     }
 }
+
+
+// MARK: - Mood/Domain API
+extension QuoteViewModel {
+
+    /// Lädt ein Zitat passend zu Stimmung und Lebensbereich.
+    /// - Parameters:
+    ///   - mood: Stimmung (optional; nil => Zufall)
+    ///   - domain: Lebensbereich (optional; nil => Zufall)
+    func refreshQuote(mood: Mood?, domain: LifeDomain?) {
+        Task {
+            await performQuoteLoad {
+                let quote = self.quoteService.getQuote(mood: mood, domain: domain)
+                await self.setCurrentQuote(quote)
+            }
+        }
+    }
+}

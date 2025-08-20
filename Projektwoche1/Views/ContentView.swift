@@ -14,11 +14,56 @@ struct ContentView: View {
     // MARK: - Dependencies (Abhängigkeiten/Zugehörigkeiten)
     @EnvironmentObject private var quoteVM: QuoteViewModel
     @State private var showFavorites = false
+    @State private var selectedMood: Mood = .freude
+    @State private var selectedDomain: LifeDomain = .work
     
     // MARK: - View
     var body: some View {
+        
         NavigationStack {
             VStack(spacing: 16) {
+                
+                HStack {
+                    MascotView(mood: selectedMood, domain: selectedDomain, size: 64)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("MUSE")
+                            .font(.headline)
+                        Text("Findet das passende Zitat für Ihre Stimmung.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                }
+                .padding(.bottom, 6)
+                
+                // Auswahl: Stimmung & Bereich
+                Group {
+                    HStack {
+                        Text("Stimmung")
+                            .font(.caption).foregroundStyle(.secondary)
+                        Spacer()
+                    }
+                    Picker("Stimmung", selection: $selectedMood) {
+                        ForEach(Mood.allCases, id: \.self) { m in
+                            Text(m.displayName).tag(m)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    HStack {
+                        Text("Bereich")
+                            .font(.caption).foregroundStyle(.secondary)
+                        Spacer()
+                    }
+                    Picker("Bereich", selection: $selectedDomain) {
+                        ForEach(LifeDomain.allCases, id: \.self) { d in
+                            Text(d.displayName).tag(d)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+                .padding(.bottom, 6)
+                
                 //Ladezustand
                 if quoteVM.isLoading {
                     ProgressView("Zitat wird geladen...")

@@ -10,7 +10,7 @@ import Foundation
 // MARK: - Category Enum
 /// Definiert alle verfügbaren Zitat-Kategorien in der App
 /// Gewährleistet Type-Safety und verhindert Tippfehler
-enum Category: String, CaseIterable, Codable {
+enum Category: String, CaseIterable, Codable,Hashable {
     
     // MARK: - Cases
     

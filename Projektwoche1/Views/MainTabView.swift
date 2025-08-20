@@ -12,16 +12,23 @@ struct MainTabView: View {
     
     var body: some View {
         
-        TabView {
-            
+       
+       //   AppBackground()
+              
+        
+            TabView {
+                
                 ContentView()
-            .tabItem {
-                    Image(systemName: "house")
-                    Text("Start")
-                }
-            
-            
+                
+                    .tabItem {
+                        Image(systemName: "house")
+                        Text("Start")
+                    }
+                
             }
+            .frame(width:405)
+           
+            
               
                 }
            
