@@ -96,7 +96,7 @@ struct LaunchScreenView: View {
                         .foregroundColor(.black)
                         .opacity(versionOpacity)
                     
-                    Text("© 2025 Quote Craft")
+                    Text("© 2025 MUSE (Quote Craft)")
                         .font(.system(size: 12, weight: .regular))
                         .foregroundColor(.black.opacity(0.7))
                         .opacity(versionOpacity)

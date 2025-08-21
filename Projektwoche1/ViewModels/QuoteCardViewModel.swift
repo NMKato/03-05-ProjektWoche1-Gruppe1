@@ -25,6 +25,12 @@ final class QuoteCardViewModel: ObservableObject {
     /// Loading-State für Aktionen
     @Published var isPerformingAction: Bool = false
     
+    /// Share-Sheet Anzeige-Status
+    @Published var showShareSheet: Bool = false
+
+    /// Zu teilender Inhalt
+    @Published var shareContent: String = ""
+    
     /// Fehlermeldung bei Aktionen
     @Published var actionError: String?
     
@@ -129,6 +135,27 @@ final class QuoteCardViewModel: ObservableObject {
         }
     }
     
+    
+    /// Teilt das aktuelle Zitat über das System-Share-Sheet
+    func shareQuote() {
+        guard config.showActions else { return }
+        
+        let shareText = """
+        "\(quote.text)"
+        
+        - \(quote.author) -
+        
+        Geteilt via QuoteCraft
+        """
+        
+        // ActivityViewController über Published Property verfügbar machen
+        DispatchQueue.main.async {
+            self.shareContent = shareText
+            self.showShareSheet = true
+        }
+    }
+    
+    
     /// Aktualisiert das Quote (für externe Updates)
     /// - Parameter newQuote: Das neue Quote
     func updateQuote(_ newQuote: Quote) async {
@@ -226,3 +253,6 @@ extension QuoteCardViewModel {
         config.showActions && !isPerformingAction
     }
 }
+
+
+

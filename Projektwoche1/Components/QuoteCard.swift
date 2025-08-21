@@ -30,12 +30,16 @@ struct QuoteCard: View {
     /// ViewModel das die komplette Card-Logik kapselt
     @ObservedObject var viewModel: QuoteCardViewModel
     
+    
     // MARK: - View
     
     var body: some View {
         ZStack {
             // Hintergrund Bild
             backgroundLayer
+            
+            
+            
             
             // Inhalt
             VStack(alignment: .leading, spacing: 12) {
@@ -45,6 +49,20 @@ struct QuoteCard: View {
             }
             .padding(viewModel.config.padding)
             .frame(maxWidth: .infinity, alignment: .leading)
+            
+            
+            VStack {
+                Spacer()
+                Image("blaetterBoden03")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(maxWidth: 370, maxHeight: 200)  // Flexible Breite
+                    .opacity(0.7)
+                    .clipped()  // Verhindert Overflow
+                    
+            }
+           .allowsHitTesting(false)
+            
             
         }
         .frame(maxWidth: viewModel.config.maxWidth)
@@ -60,7 +78,11 @@ struct QuoteCard: View {
         } message: {
             if let error = viewModel.actionError {
                 Text(error)
+                
             }
+        }
+        .sheet(isPresented: $viewModel.showShareSheet) {
+            ShareSheet(content: viewModel.shareContent)
         }
     }
 }
@@ -79,10 +101,27 @@ private extension QuoteCard {
                     .background(.ultraThinMaterial)
                     .clipShape(Capsule())
                 Spacer()
+                
+                // Rechte Seite: Share Button
+                if viewModel.config.showActions {
+                    Button {
+                        viewModel.shareQuote()
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundStyle(.white)
+                    }
+                    .buttonStyle(.bordered)
+                    .accessibilityLabel("Zitat teilen")
+                }
             }
             .transition(.opacity.combined(with: .move(edge: .top)))
         }
+        
+        
+        
     }
+    
     
     var bodyText: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -102,29 +141,41 @@ private extension QuoteCard {
     var footer: some View {
         if viewModel.config.showActions {
             HStack(spacing: 10) {
-                // Refresh Button
+                // Blattbutton
                 Button {
                     viewModel.refreshQuote()
                 } label: {
-                    HStack(spacing: 4) {
+                    ZStack {
+                        // Hintergrund: Blatt PNG
+                        Image("blattButton02")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 80, height: 80)
+                            .rotationEffect(.degrees(15))
+                        
+                        // Vordergrund: SF Symbol (liegt darüber)
                         if viewModel.isPerformingAction {
                             ProgressView()
                                 .scaleEffect(0.8)
                         } else {
                             Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundStyle(.white.opacity(0.8))
                         }
-                        Text("Neues Zitat")
                     }
                 }
-                .buttonStyle(.borderedProminent)
                 .disabled(!viewModel.canRefresh)
                 
+                //    .padding()
+                Spacer(minLength: 150)
                 // Favorite Button
                 Button {
                     viewModel.toggleFavorite()
                 } label: {
                     Label(viewModel.favoriteButtonLabel, systemImage: viewModel.favoriteButtonIcon)
                         .labelStyle(.iconOnly)
+                        .foregroundColor(.yellow)
+                    
                 }
                 .buttonStyle(.bordered)
                 .foregroundStyle(.white)
@@ -133,8 +184,11 @@ private extension QuoteCard {
                 
                 Spacer()
             }
+           // .frame(width: 340)
             .padding(.top, 6)
+            
         }
+        
     }
     
     @ViewBuilder
@@ -186,19 +240,19 @@ private extension QuoteCard {
     func gradientColors(for category: Category?) -> [Color] {
         switch category {
         case .motivation:
-            return [Color.orange.opacity(0.85), Color.red.opacity(0.7)]
+            return [Color.orange.opacity(0.60), Color.red.opacity(0.5)]
         case .wisdom:
-            return [Color.blue.opacity(0.8), Color.indigo.opacity(0.7)]
+            return [Color.blue.opacity(0.6), Color.indigo.opacity(0.6)]
         case .programming:
-            return [Color.green.opacity(0.8), Color.teal.opacity(0.7)]
+            return [Color.green.opacity(0.5), Color.teal.opacity(0.4)]
         case .general:
-            return [Color.gray.opacity(0.6), Color.gray.opacity(0.8)]
+            return [Color.gray.opacity(0.3), Color.gray.opacity(0.6)]
         case .drinking:
-            return [Color.yellow.opacity(0.9), Color.orange.opacity(0.7)]
+            return [Color.yellow.opacity(0.7), Color.orange.opacity(0.4)]
         case .mindset:
-            return [Color.purple.opacity(0.85), Color.blue.opacity(0.6)]
+            return [Color.purple.opacity(0.60), Color.blue.opacity(0.3)]
         case .none:
-            return [Color.gray.opacity(0.6), Color.gray.opacity(0.8)]
+            return [Color.gray.opacity(0.5), Color.gray.opacity(0.7)]
         }
     }
 }
@@ -228,6 +282,23 @@ extension QuoteCard {
             backgroundStyle: backgroundStyle
         )
         self.viewModel = viewModel
+    }
+}
+
+// MARK: - ShareSheet Helper
+private struct ShareSheet: UIViewControllerRepresentable {
+    let content: String
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let activityVC = UIActivityViewController(
+            activityItems: [content],
+            applicationActivities: nil
+        )
+        return activityVC
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {
+        // Keine Updates benötigt
     }
 }
 

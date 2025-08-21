@@ -8,7 +8,7 @@
 import Foundation
 
 
-import Foundation
+
 
 /// Lebensbereich / Kontext der aktuellen Situation
 enum LifeDomain: String, CaseIterable, Codable, Sendable {

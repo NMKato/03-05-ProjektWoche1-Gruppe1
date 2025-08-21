@@ -8,7 +8,7 @@
 import Foundation
 
 
-import Foundation
+
 
 /// Stimmungslage des Nutzers (für passende Zitat-Auswahl)
 enum Mood: String, CaseIterable, Codable, Sendable {

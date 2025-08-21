@@ -51,10 +51,13 @@ struct ContentView: View {
                     Button {
                         quoteVM.showFavoritesSheet()
                     } label: {
-                        Image(systemName: "star.fill")
+                        Text("MUSE")
+                            .foregroundStyle(.white)
+                        Image(systemName: "heart.fill")
+                        
                     }
                     .accessibilityLabel("Favoriten anzeigen")
-                    .foregroundColor(.yellow)
+                    .foregroundColor(.orange)
                 }
             }
          //   .padding()
@@ -93,6 +96,7 @@ private extension ContentView {
             }
             Spacer()
         }
+        .frame(width: 370)
         .padding(.bottom, 6)
     }
     
@@ -110,6 +114,7 @@ private extension ContentView {
                         .font(.caption2)
                         .foregroundStyle(.white)
                 }
+                .frame(width: 360)
                 
                 // Stimmung (Glas-Look um den Segmented-Picker)
                 Picker("Stimmung", selection: $quoteVM.selectedMood) {
@@ -118,6 +123,7 @@ private extension ContentView {
                         
                     }
                 }
+                .frame(width: 360)
                 .pickerStyle(.segmented)
                 .tint(.white) // Segment-Farbe auf hellem/dunklem Hintergrund anpassen
                 .padding(6)
@@ -134,7 +140,7 @@ private extension ContentView {
             
             // Bereich Picker (Glass-Look um den Segmented-Picker)
             VStack(alignment: .leading, spacing: 8) {
-                HStack {
+                HStack() {
                     Text("Bereich")
                         .font(.caption)
                         .foregroundStyle(.white)
@@ -159,6 +165,7 @@ private extension ContentView {
                     quoteVM.updateDomain(newDomain)
                 }
             }
+           .frame(width: 330)
         }
     }
     

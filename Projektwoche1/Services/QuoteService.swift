@@ -235,7 +235,7 @@ private extension QuoteService {
     static var fallbackQuote: QuoteData {
         return QuoteData(
             text: "Großartige Dinge entstehen durch kleine Anfänge.",
-            author: "QuoteCraft",
+            author: "- Deine MUSE -",
             category: nil
         )
     }
