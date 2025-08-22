@@ -21,10 +21,7 @@ struct LaunchScreenView: View {
             
             AppBackground()
             // Background mit launchscreen01 Bild
-            Image("launchscreen01")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .ignoresSafeArea(.container, edges: [.top, .bottom])
+           
             
             VStack(spacing: 40) {
                 Spacer()
@@ -32,7 +29,7 @@ struct LaunchScreenView: View {
                 // Logo Section
                 VStack(spacing: 24) {
                     // Mascotchen Logo
-                    Image("LaunchScreen01")
+                    Image("appLogo7")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 250, height: 250)
@@ -41,14 +38,17 @@ struct LaunchScreenView: View {
                         .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 10)
                     
                     // Slogan Text
-                    Text("Stimmung rein. Zitat raus..")
-                        .font(.system(size: 22, weight: .medium, design: .rounded))
-                        .foregroundColor(Color(.black))
-                        .multilineTextAlignment(.center)
-                        .opacity(logoOpacity)
-                        .scaleEffect(logoScale * 0.98)
-                        .shadow(color: Color(.black).opacity(0.3), radius: 3, x: 0, y: 2)
-                }
+                    (Text("Stimmung rein. ")
+                        .foregroundColor(.black) +
+                    Text("Zitat")
+                        .foregroundColor(.orange) +
+                    Text(" raus..")
+                        .foregroundColor(.black))
+                    .font(.system(size: 22, weight: .medium, design: .rounded))
+                    .multilineTextAlignment(.center)
+                    .opacity(logoOpacity)
+                    .scaleEffect(logoScale * 0.98)
+                    .shadow(color: Color(.black).opacity(0.3), radius: 3, x: 0, y: 2)                }
                 
                 Spacer()
                 
@@ -65,7 +65,7 @@ struct LaunchScreenView: View {
                         RoundedRectangle(cornerRadius: 12)
                             .fill(
                                 LinearGradient(
-                                    colors: [Color(.black), Color(.black).opacity(0.8)],
+                                    colors: [Color(.orange), Color(.orange).opacity(0.8)],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )

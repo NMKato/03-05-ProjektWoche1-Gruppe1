@@ -38,9 +38,6 @@ struct QuoteCard: View {
             // Hintergrund Bild
             backgroundLayer
             
-            
-            
-            
             // Inhalt
             VStack(alignment: .leading, spacing: 12) {
                 header
@@ -94,12 +91,18 @@ private extension QuoteCard {
     var header: some View {
         if viewModel.config.showCategoryBadge, let category = viewModel.quote.category {
             HStack {
-                Text("\(category.icon)  \(category.displayName)")
-                    .font(.caption.weight(.semibold))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Capsule())
+                HStack(spacing: 8) {
+                    Image(category.icon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 40, height: 40)
+                        .padding(2)
+                        .background(Color.white.opacity(0.3))
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                    Text(category.displayName)
+                        .font(.caption.weight(.semibold))
+                }
+                
                 Spacer()
                 
                 // Rechte Seite: Share Button
@@ -117,11 +120,7 @@ private extension QuoteCard {
             }
             .transition(.opacity.combined(with: .move(edge: .top)))
         }
-        
-        
-        
     }
-    
     
     var bodyText: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -166,7 +165,6 @@ private extension QuoteCard {
                 }
                 .disabled(!viewModel.canRefresh)
                 
-                //    .padding()
                 Spacer(minLength: 150)
                 // Favorite Button
                 Button {
@@ -184,7 +182,6 @@ private extension QuoteCard {
                 
                 Spacer()
             }
-           // .frame(width: 340)
             .padding(.top, 6)
             
         }

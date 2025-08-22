@@ -12,108 +12,131 @@ import SwiftData
 struct FavoritesView: View {
     @Environment(\.modelContext) private var context
 
-    // SwiftData Query für Favoriten
     @Query(
         filter: #Predicate<Quote> { $0.isFavorite == true },
         sort: \Quote.dateCreated, order: .reverse
-    )
-    private var favorites: [Quote]
+    ) private var favorites: [Quote]
 
-    // UI State 
     @State private var showAddSheet = false
     @State private var expandedCategories: Set<Category> = []
-    
-    // Fullscreen State
     @State private var fullscreenQuote: Quote? = nil
 
-    // Services
-    private var dataManager: DataManager {
-        DataManager(modelContext: context)
-    }
-
-    // Gruppierte Favoriten
+    private var dataManager: DataManager { DataManager(modelContext: context) }
     private var groupedFavorites: [Category: [Quote]] {
         Dictionary(grouping: favorites) { $0.category ?? .general }
     }
 
     var body: some View {
         NavigationStack {
-            Group {
-                if favorites.isEmpty {
-                    emptyStateView
-                } else {
-                    favoritesList
+            ZStack {
+                // Hintergrund
+                AppBackground2()
+                    .frame(width:360)
+                    .ignoresSafeArea(.all)
+                
+                Group {
+                    if favorites.isEmpty {
+                        emptyStateView
+                    } else {
+                        favoritesList
+                    }
                 }
             }
-            .navigationTitle("Favoriten")
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.clear, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
+            .navigationBarHidden(false)
+            .safeAreaInset(edge: .top) {
+                HStack(spacing: 8) {
+                    Image("muse_happy")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 80, height: 80)
+                    
+                    VStack(alignment: .leading) {
+                       
+                        Text("")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundColor(.orange)
+                        
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal)
+                    }
+                }
+             
+              //  .padding()
+            }
+            .toolbarBackground(.clear, for: .navigationBar)
+            
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showAddSheet = true
                     } label: {
-                        Label("Neues Zitat", systemImage: "plus")
+                        Image(systemName: "plus")
+                            .foregroundColor(.orange)
+                            .font(.title2)
                     }
                 }
             }
         }
-        .background {
-            AppBackground()
-        }
         .sheet(isPresented: $showAddSheet) {
-            AddQuoteSheet { newQuote in
-                saveNewQuote(newQuote)
-            }
-            .presentationDetents([.medium, .large])
+            AddQuoteSheet { saveNewQuote($0) }
+                .presentationDetents([.medium, .large])
         }
         .fullScreenCover(item: $fullscreenQuote) { quote in
             FullscreenQuoteView(quote: quote, dataManager: dataManager)
         }
+        
     }
-}
-
-// MARK: - Subviews
-private extension FavoritesView {
     
-    var emptyStateView: some View {
+    // MARK: - Subviews
+    private var emptyStateView: some View {
         ContentUnavailableView(
             "Keine Favoriten",
             systemImage: "star",
             description: Text("Tippe auf den Stern in der Hauptansicht oder füge neue Zitate hier hinzu.")
         )
+        .foregroundStyle(.white)
     }
-    
+}
+
+// MARK: - Liste
+private extension FavoritesView {
     var favoritesList: some View {
         List {
             ForEach(sortedCategories, id: \.self) { category in
                 categorySection(for: category)
             }
         }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden) // Entfernt List-Hintergrund
+        .background(Color.clear) // Transparenter List-Hintergrund
+        .tint(.orange)
     }
-    
+
     private var sortedCategories: [Category] {
         Array(groupedFavorites.keys).sorted { $0.rawValue < $1.rawValue }
     }
-    
+
     func categorySection(for category: Category) -> some View {
         DisclosureGroup(
             isExpanded: Binding(
                 get: { expandedCategories.contains(category) },
-                set: { isExpanded in
-                    toggleCategory(category, isExpanded: isExpanded)
-                }
+                set: { toggleCategory(category, isExpanded: $0) }
             )
         ) {
             categoryContent(for: category)
         } label: {
-            CategoryHeaderView(
-                category: category,
-                count: groupedFavorites[category]?.count ?? 0
-            )
+            CategoryHeaderView(category: category, count: groupedFavorites[category]?.count ?? 0)
+                .foregroundStyle(.white)
         }
+        .listRowBackground(Color.clear) // Transparenter Zeilen Hintergrund
+        .listRowSeparator(.hidden)
     }
-    
+
     func categoryContent(for category: Category) -> some View {
         ForEach(groupedFavorites[category] ?? []) { quote in
             QuoteCard(
@@ -123,16 +146,13 @@ private extension FavoritesView {
                 config: .init(showCategoryBadge: false, showActions: false),
                 backgroundStyle: .categoryGradient(quote.category)
             )
-            .onTapGesture {
-                openFullscreen(quote: quote)
-            }
+            .onTapGesture { openFullscreen(quote: quote) }
             .listRowInsets(EdgeInsets())
+            .listRowBackground(Color.clear)
             .padding(.vertical, 6)
             .padding(.horizontal, 8)
             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                Button(role: .destructive) {
-                    removeFromFavorites(quote)
-                } label: {
+                Button(role: .destructive) { removeFromFavorites(quote) } label: {
                     Label("Löschen", systemImage: "trash")
                 }
             }

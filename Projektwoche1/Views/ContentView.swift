@@ -2,7 +2,6 @@
 //  ContentView.swift
 //  Projektwoche1
 //
-//  FINAL VERSION: Komplette ViewModel-Integration
 //  Created by Nikolas Kato 18.08.2025
 //  Created by Florica Girisci 19.08.2025
 //  Created by Waldemar Dietler 20.08.2025
@@ -51,7 +50,7 @@ struct ContentView: View {
                     Button {
                         quoteVM.showFavoritesSheet()
                     } label: {
-                        Text("MUSE")
+                        Text("MUSE ")
                             .foregroundStyle(.white)
                         Image(systemName: "heart.fill")
                         

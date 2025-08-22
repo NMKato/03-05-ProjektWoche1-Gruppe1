@@ -5,66 +5,130 @@
 //  Created by Nikolas Kato on 18.08.25.
 //
 
-import Foundation
-
-## UML Diagram
-
-![UML Diagram](./Assets.xcassets/UML%20Diagram%20QutoeCraftApp.imageset/UML%20Diagram%20QutoeCraftApp.png)
-
 QuoteCraft
-A native iOS app for displaying and managing inspirational quotes with favorites functionality, built with SwiftUI and SwiftData.
-Overview
-QuoteCraft is a modern iOS application that presents users with random quotes from various categories. The app demonstrates best practices in iOS development using SwiftUI, SwiftData, and MVVM architecture.
-Features
-Implemented
+<div align="center"> <img src="Assets.xcassets/AppIcon.imageset/AppIcon.png" alt="QuoteCraft Logo" width="120" height="120">
+Eine intelligente iOS-App für personalisierte Zitate
 
- Random quote display on app launch
- 6 quote categories (Motivation, Wisdom, Programming, Drinking, Mindset, General)
- Favorites system for saving preferred quotes
- Persistent local storage with SwiftData
- Type-safe category management with enums
- MVVM architecture with clear separation of concerns
+Dein Moment. Dein Zitat. Clever kuratiert. Von MUSE.
 
-Planned
+</div>
+📱 Über das Projekt
+QuoteCraft ist eine iOS-App, die entwickelt wurde, um Nutzern passende Zitate basierend auf ihrer aktuellen Stimmung und ihrem Lebensbereich zu liefern. Die App wurde als einwöchiges Gruppenprojekt entwickelt und kombiniert moderne SwiftUI-Technologien mit einem durchdachten User Experience Design.
 
- User interface implementation
- Category filtering functionality
- Navigation between main and favorites views
- Quote sharing capabilities
-
-Architecture
-The app follows MVVM (Model-View-ViewModel) pattern with the following structure:
-Models → Services → ViewModels → Views
-   ↓        ↓          ↓         ↓
-Quote   QuoteService QuoteVM   QuoteView
-Category DataManager FavsVM    FavsView
-Data Flow
-
-QuoteService: Provides local quote data
-DataManager: Handles SwiftData CRUD operations
-ViewModels: Manage business logic and state
-Views: SwiftUI user interface components
-
-Project Structure
+🎯 Hauptfunktionen
+Stimmungsbasierte Zitat-Auswahl: Intelligente Algorithmen wählen Zitate basierend auf Nutzer-Stimmung (Freude, Traurig, Unsicher, Enttäuscht) und Lebensbereich (Arbeit, Freizeit, Privat)
+MUSE Maskottchen: Ein interaktiver Papier-Fuchs, der die aktuelle Stimmung und den Kontext visuell darstellt
+Favoriten-System: Speichern und organisieren von Lieblingszitaten nach Kategorien
+Share-Funktionalität: Teilen von Zitaten über native iOS-Share-Optionen
+Offline-First: Alle Zitate sind lokal verfügbar, keine Internetverbindung erforderlich
+🏗️ Architektur
+<div align="center"> <img src="Assets.xcassets/UML Diagram QutoeCraftApp.imageset/UML Diagram QutoeCraftApp.png" alt="UML Diagramm" width="600"> </div>
+🛠️ Technischer Stack
+Framework: SwiftUI (iOS 16+)
+Datenpersistierung: SwiftData
+Architektur: MVVM (Model-View-ViewModel)
+UI-Design: Glassmorphism mit benutzerdefinierten Hintergründen
+State Management: Combine Framework
+📁 Projektstruktur
 QuoteCraft/
-├── Models/
-│   ├── Quote.swift                 # SwiftData Quote model
-│   ├── Category.swift              # Category enum definition
-│   └── (FavoriteQuote in Quote.swift)
-├── Services/
-│   ├── QuoteService.swift          # Quote data provider
-│   ├── DataManager.swift           # SwiftData operations
-│   └── SwiftDataConfigurator.swift # Container setup
+├── Views/
+│   ├── ContentView.swift          # Hauptansicht
+│   ├── FavoritesView.swift        # Favoriten-Management
+│   ├── QuoteCard.swift            # Wiederverwendbare Zitat-Karte
+│   ├── LaunchScreenView.swift     # Animierter Startbildschirm
+│   └── Components/
+│       ├── MascotView.swift       # MUSE Maskottchen
+│       └── CategoryHeaderView.swift
 ├── ViewModels/
-│   ├── QuoteViewModel.swift        # Main quote logic
-│   └── FavoritesViewModel.swift    # Favorites management
-└── Views/
-    ├── QuoteCraftApp.swift         # App entry point
-    └── ContentView.swift           # Main navigation (planned)
-Data Models
-Quote
-swift@Model
-class Quote {
+│   ├── QuoteViewModel.swift       # Haupt-ViewModel
+│   └── QuoteCardViewModel.swift   # Card-spezifische Logik
+├── Models/
+│   ├── Quote.swift               # SwiftData Models
+│   ├── Category.swift            # Kategorien-Enum
+│   ├── Mood.swift                # Stimmungs-Enum
+│   └── LifeDomain.swift          # Lebensbereich-Enum
+├── Services/
+│   ├── QuoteService.swift        # Zitat-Bereitstellung
+│   ├── DataManager.swift         # SwiftData Abstraktionsschicht
+│   └── SwiftDataConfigurator.swift
+└── Assets/
+    ├── Backgrounds/              # Hintergrundbilder
+    ├── Icons/                    # Kategorie-Icons
+    └── MUSE/                     # Maskottchen-Assets
+🎨 Design-Features
+Adaptive UI-Elemente
+Glassmorphism-Design: Transparente UI-Elemente mit Blur-Effekten
+Kategoriebasierte Farbschemata: Jede Zitat-Kategorie hat eigene Gradient-Farben
+Responsive Layout: Optimiert für verschiedene iPhone-Größen
+Dark Mode Support: Vollständige Unterstützung für dunkles Design
+Interaktive Komponenten
+Animated Launch Screen: Professioneller Startbildschirm mit Progress-Animation
+Swipe Actions: Intuitive Gesten für Favoriten-Management
+Smooth Transitions: Flüssige Übergänge zwischen Views
+Custom Buttons: Einzigartige Blatt-Button-Designs
+🧠 Intelligente Zitat-Auswahl
+Die App verwendet einen gewichteten Algorithmus zur Zitat-Auswahl:
+
+swift
+// Beispiel der Gewichtsmatrix
+switch (mood, domain) {
+case (.freude, .leisure):
+    return [(.general, 4), (.wisdom, 3), (.mindset, 3), (.motivation, 2)]
+case (.traurig, .work):
+    return [(.motivation, 5), (.mindset, 4), (.wisdom, 3)]
+// ... weitere Kombinationen
+}
+📊 Daten & Kategorien
+Verfügbare Kategorien
+Motivation (🚀): Inspirierende Zitate für neue Energie
+Weisheit (🧠): Philosophische Erkenntnisse und Lebensweisheiten
+Programmierung (💻): Zitate für Entwickler und Tech-Enthusiasten
+Mindset (🧘‍♂️): Persönlichkeitsentwicklung und Denkweise
+Allgemein (💭): Universell anwendbare Zitate
+Saufen (🍺): Humorvolle Zitate rund ums Feiern
+Zitat-Sammlung
+150+ kuratierte Zitate von klassischen und modernen Autoren
+Eigene MUSE-Zitate: Speziell für die App entwickelte, prägnante Weisheiten
+Mehrsprachig: Primär deutsche Zitate mit internationalen Quellen
+🚀 Installation & Setup
+Voraussetzungen
+Xcode 15.0+
+iOS 16.0+
+Swift 5.9+
+Installation
+Repository klonen:
+bash
+
+cd QuoteCraft
+Projekt in Xcode öffnen:
+bash
+open QuoteCraft.xcodeproj
+Build und Run auf Simulator oder Gerät
+Erste Schritte
+App starten und Launch-Animation genießen
+Stimmung und Lebensbereich auswählen
+Erstes personalisiertes Zitat erhalten
+Favoriten durch Stern-Button hinzufügen
+MUSE-Favoriten-Sektion erkunden
+👥 Team & Entwicklung
+Entwicklungsteam:
+
+Nikolas Kato - Lead Developer & UI/UX Design
+Florica Girisci - View Development & Component Architecture
+Waldemar Dietler - Data Management & Backend Logic
+Entwicklungszeitraum: 1 Woche intensives Gruppenprojekt
+
+Projektmethodik:
+
+Agile Entwicklung mit täglichen Stand-ups
+Git Flow für Versionskontrolle
+Code Reviews und Pair Programming
+Iterative UI/UX-Verbesserungen
+🔧 Technische Highlights
+SwiftData Integration
+swift
+@Model
+final class Quote {
     @Attribute(.unique) var id: UUID
     var text: String
     var author: String
@@ -72,97 +136,31 @@ class Quote {
     var dateCreated: Date
     var isFavorite: Bool
 }
-FavoriteQuote
-swift@Model
-class FavoriteQuote {
-    @Attribute(.unique) var id: UUID
-    var quote: Quote
-    var dateFavorited: Date
+Reactive UI mit Combine
+swift
+@MainActor
+final class QuoteViewModel: ObservableObject {
+    @Published var currentQuote: Quote?
+    @Published var selectedMood: Mood = .freude
+    @Published var selectedDomain: LifeDomain = .work
 }
-Category
-swiftenum Category: String, CaseIterable {
-    case motivation = "Motivation"
-    case wisdom = "Weisheit"
-    case programming = "Programmierung"
-    case drinking = "Saufen"
-    case mindset = "Mindset"
-    case general = "Allgemein"
-}
-Technology Stack
+Custom ViewModifier für Glassmorphism
+swift
+.background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+.overlay(RoundedRectangle(cornerRadius: 12)
+    .strokeBorder(.white.opacity(0.18), lineWidth: 0.5))
+📈 Zukünftige Entwicklungen
+ iCloud Sync für Favoriten
+ Widget Support für iOS Home Screen
+ Apple Watch Companion App
+ Benutzerdefinierte Zitat-Kategorien
+ Social Sharing mit Custom Cards
+ Accessibility-Verbesserungen
+ Internationalisierung (EN, FR, ES)
+📄 Lizenz
+Dieses Projekt wurde als Bildungsprojekt entwickelt. Alle Rechte vorbehalten.
 
-Framework: SwiftUI (iOS 17+)
-Database: SwiftData
-Architecture: MVVM
-Language: Swift 5.9+
-Dependencies: None (native iOS only)
+🤝 Mitwirken
+Da dies ein abgeschlossenes Gruppenprojekt ist, sind Pull Requests derzeit nicht geöffnet. Bei Fragen oder Anregungen können Issues erstellt werden.
 
-Requirements
-
-Xcode 15.0 or later
-iOS 17.0 or later
-macOS 14.0 or later (for Simulator)
-
-
-
-Development Progress
-Phase 1: Foundation ✅
-
- Data models (Quote, FavoriteQuote, Category)
- Service layer (QuoteService, DataManager)
- SwiftData configuration and setup
-
-Phase 2: Business Logic ✅
-
- ViewModels implementation
- Category enum migration
- Type-safe architecture
-
-Phase 3: User Interface 🚧
-
- QuoteCardView component
- QuoteDisplayView main screen
- FavoritesView list screen
- ContentView navigation
-
-Phase 4: Integration 🚧
-
- View navigation implementation
- UI/UX improvements
- Testing and optimization
-
-Architecture Decisions
-Why MVVM?
-
-Clear separation between UI and business logic
-Better testability and maintainability
-Optimized for SwiftUI reactive patterns
-
-Why SwiftData?
-
-Native iOS integration with better performance
-Type-safe database operations
-Modern replacement for Core Data
-
-Why Separate ViewModels?
-
-Single Responsibility Principle
-Performance optimization (isolated state updates)
-Improved code maintainability and testing
-
-Code Quality
-The project emphasizes:
-
-Type Safety: Enum-based categories, SwiftData models
-Error Handling: Comprehensive error management
-Documentation: Detailed code comments and documentation
-Testing Support: Isolated components for unit testing
-
-UML Diagram
-The project includes a comprehensive UML diagram showing the complete architecture with all relationships between models, services, view models, and views.
-Author
-Nikolas Kato
-Projektwoche 1 - August 18, 2025
-License
-Educational project - Not for commercial use
-
-Last Updated: August 18, 2025 - Backend/Models implemented, Views in development
+<div align="center"> <p><strong>QuoteCraft</strong> - Wo Technologie auf Inspiration trifft</p> <p>Entwickelt mit ❤️ in Deutschland</p> </div>

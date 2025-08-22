@@ -43,17 +43,17 @@ enum Category: String, CaseIterable, Codable,Hashable {
     var icon: String {
         switch self {
         case .motivation:
-            return "🚀"
+            return "Motivation"
         case .wisdom:
-            return "🧠"
+            return "Weisheit"
         case .programming:
-            return "💻"
+            return "Programmierung"
         case .general:
-            return "💭"
+            return "Allgemein"
         case .drinking:
-            return "🍺"
+            return "Saufen"
         case .mindset:
-            return "🧘‍♂️"
+            return "Mindset"
         }
     }
     
