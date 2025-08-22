@@ -6,7 +6,7 @@
 //
 
 QuoteCraft
-<div align="center"> <img src="Assets.xcassets/AppIcon.imageset/AppIcon.png" alt="QuoteCraft Logo" width="120" height="120">
+<div align="center"> <img src="Assets.xcassets/AppIcon.imageset/AppIcon.png" alt="AppIcon" width="120" height="120">
 Eine intelligente iOS-App für personalisierte Zitate
 
 Dein Moment. Dein Zitat. Clever kuratiert. Von MUSE.
@@ -22,7 +22,7 @@ Favoriten-System: Speichern und organisieren von Lieblingszitaten nach Kategorie
 Share-Funktionalität: Teilen von Zitaten über native iOS-Share-Optionen
 Offline-First: Alle Zitate sind lokal verfügbar, keine Internetverbindung erforderlich
 🏗️ Architektur
-<div align="center"> <img src="Assets.xcassets/UML Diagram QutoeCraftApp.imageset/UML Diagram QutoeCraftApp.png" alt="UML Diagramm" width="600"> </div>
+<div align="center"> <img src="Assets.xcassets/UML Diagram QutoeCraftApp.imageset/UML Diagram QutoeCraftApp.png" alt="UML Diagram QutoeCraftApp" width="600"> </div>
 🛠️ Technischer Stack
 Framework: SwiftUI (iOS 16+)
 Datenpersistierung: SwiftData
