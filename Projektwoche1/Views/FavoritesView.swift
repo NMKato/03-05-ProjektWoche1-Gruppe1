@@ -225,7 +225,17 @@ private struct AddQuoteSheet: View {
                     )) {
                         Text("Keine").tag(Category?.none)
                         ForEach(Category.allCases, id: \.self) { c in
-                            Text("\(c.icon)  \(c.displayName)").tag(c)
+                            HStack(spacing: 8) {
+                                Image(c.icon)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 40, height: 40)
+                                    .padding(2)
+                                    .background(Color.white.opacity(0.3))
+                                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                                Text(c.displayName)
+                            }
+                            .tag(c)
                         }
                     }
                     .pickerStyle(.navigationLink)
