@@ -1,7 +1,6 @@
 //
 //  AppBackground.swift
 //  Projektwoche1
-//
 //  Created by Nikolas Kato on 20.08.25.
 //
 

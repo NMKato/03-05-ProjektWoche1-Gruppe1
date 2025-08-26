@@ -15,6 +15,11 @@ struct ContentView: View {
     @EnvironmentObject private var quoteVM: QuoteViewModel
     @Environment(\.modelContext) private var modelContext
     
+    @State private var shareImage: UIImage? = nil
+    @State private var showShareSheet = false
+    @State private var showInfoSheet = false
+
+    
     // MARK: - Computed Properties
     private var dataManager: DataManager {
         DataManager(modelContext: modelContext)
@@ -23,6 +28,26 @@ struct ContentView: View {
     private var quoteService: QuoteService {
         QuoteService()
     }
+    
+    private func shareCurrentQuoteAsImage() {
+        guard let q = quoteVM.currentQuote else { return }
+
+        // 9:16 – Social/Story-freundlich; alternativ 1080x1080
+        let canvas = ShareQuoteView(
+            text: q.text,
+            author: q.author,
+            category: q.category,
+            backgroundAsset: "MUSE_Share_Design"
+        )
+        let targetSize = CGSize(width: 1080, height: 1920)
+
+        if let img = ShareRenderer.render(view: canvas, size: targetSize) {
+            shareImage = img
+            showShareSheet = true
+        }
+    }
+
+    
     
     // MARK: - View
     var body: some View {
@@ -42,9 +67,24 @@ struct ContentView: View {
                 errorSection
                 
                 Spacer()
+                
+                // Info Button unten links
+                HStack {
+                    Button {
+                        showInfoSheet = true
+                    } label: {
+                        
+                        Image(systemName: "info.circle")
+                            .font(.title2)
+                            .foregroundStyle(.white.opacity(0.6))
+                    }
+                    .accessibilityLabel("App-Informationen anzeigen")
+                    
+                    Spacer()
+                }
+               .padding()
             }
-            .padding()
-       //     .navigationTitle("Quote Craft")
+           // .padding()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -59,7 +99,6 @@ struct ContentView: View {
                     .foregroundColor(.orange)
                 }
             }
-         //   .padding()
             .background { AppBackground() }
           
         }
@@ -71,6 +110,9 @@ struct ContentView: View {
         }
         .sheet(isPresented: $quoteVM.showFavorites) {
             FavoritesView()
+        }
+        .sheet(isPresented: $showInfoSheet) {
+            InfoView()
         }
     }
 }
@@ -247,7 +289,6 @@ private extension ContentView {
     let dm = DataManager(modelContext: container.mainContext)
     let quoteVM = QuoteViewModel(dataManager: dm)
     
-    // Preview-Zitat setzen
     quoteVM.currentQuote = Quote(
         text: "Vorschau-Zitat für die optimierte ContentView mit vollständiger ViewModel-Integration.",
         author: "Preview Author",

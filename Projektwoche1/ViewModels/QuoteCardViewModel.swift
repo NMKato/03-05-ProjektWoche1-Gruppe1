@@ -19,6 +19,11 @@ final class QuoteCardViewModel: ObservableObject {
     /// Das angezeigte Zitat
     @Published var quote: Quote
     
+    @Published var shareItems: [Any] = []
+    
+  
+
+    
     /// Favoriten-Status des Zitats
     @Published var isFavorited: Bool
     
@@ -135,26 +140,34 @@ final class QuoteCardViewModel: ObservableObject {
         }
     }
     
-    
-    /// Teilt das aktuelle Zitat über das System-Share-Sheet
-    func shareQuote() {
+   
+
+    @MainActor
+    func shareDesignedQuote() {
         guard config.showActions else { return }
-        
-        let shareText = """
-        "\(quote.text)"
-        
-        - \(quote.author) -
-        
-        Geteilt via QuoteCraft
-        """
-        
-        // ActivityViewController über Published Property verfügbar machen
-        DispatchQueue.main.async {
-            self.shareContent = shareText
+
+        let targetSize = CGSize(width: 1024, height: 1024)
+
+        let canvas = ShareQuoteView(
+            text: quote.text,
+            author: quote.author,
+            category: quote.category,
+            backgroundAsset: "MUSE_Share_Design",
+            canvasSize: targetSize
+        )
+
+        if let image = ShareRenderer.render(view: canvas, size: targetSize) {
+            let caption = "„\(quote.text)“\n— \(quote.author)"
+            self.shareItems = [image, caption]
+            self.showShareSheet = true
+        } else {
+            self.shareItems = ["„\(quote.text)“\n— \(quote.author)"]
             self.showShareSheet = true
         }
     }
+
     
+  
     
     /// Aktualisiert das Quote (für externe Updates)
     /// - Parameter newQuote: Das neue Quote

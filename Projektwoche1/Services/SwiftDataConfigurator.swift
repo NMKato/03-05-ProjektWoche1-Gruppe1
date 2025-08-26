@@ -97,8 +97,24 @@ struct SwiftDataConfigurator {
 }
 
 // MARK: - Testing Support
-#if DEBUG
 extension SwiftDataConfigurator {
+    
+    /// Erstellt einen Preview-Container mit In-Memory Storage
+    /// Für SwiftUI Previews
+    /// - Returns: In-Memory ModelContainer für Previews
+    static func createPreviewContainer() -> ModelContainer {
+        let schema = createQuoteCraftSchema()
+        let previewConfiguration = createInMemoryConfiguration(schema: schema)
+        
+        do {
+            return try ModelContainer(
+                for: schema,
+                configurations: [previewConfiguration]
+            )
+        } catch {
+            fatalError("💥 Preview Container konnte nicht erstellt werden: \(error)")
+        }
+    }
     
     /// Erstellt einen Test-Container mit In-Memory Storage
     /// Für Unit-Tests und UI-Tests
@@ -121,7 +137,7 @@ extension SwiftDataConfigurator {
     /// Für SwiftUI Previews und Demo-Zwecke
     /// - Returns: In-Memory ModelContainer mit Sample-Daten
     @MainActor
-    static func createPreviewContainer() -> ModelContainer {
+    static func createPreviewContainerWithSampleData() -> ModelContainer {
         let container = createTestContainer()
         
         // Füge Sample-Daten für Previews hinzu
@@ -141,4 +157,3 @@ extension SwiftDataConfigurator {
         return container
     }
 }
-#endif

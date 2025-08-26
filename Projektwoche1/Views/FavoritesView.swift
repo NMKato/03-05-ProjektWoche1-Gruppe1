@@ -20,6 +20,8 @@ struct FavoritesView: View {
     @State private var showAddSheet = false
     @State private var expandedCategories: Set<Category> = []
     @State private var fullscreenQuote: Quote? = nil
+    @State private var shareItems: [Any] = []
+    @State private var showShareSheet = false
 
     private var dataManager: DataManager { DataManager(modelContext: context) }
     private var groupedFavorites: [Category: [Quote]] {
@@ -89,6 +91,9 @@ struct FavoritesView: View {
         .fullScreenCover(item: $fullscreenQuote) { quote in
             FullscreenQuoteView(quote: quote, dataManager: dataManager)
         }
+        .sheet(isPresented: $showShareSheet) {
+            ShareSheet(items: shareItems)
+        }
         
     }
     
@@ -152,6 +157,11 @@ private extension FavoritesView {
             .padding(.vertical, 6)
             .padding(.horizontal, 8)
             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                Button { shareQuote(quote) } label: {
+                    Label("Teilen", systemImage: "square.and.arrow.up")
+                }
+                .tint(.orange)
+                
                 Button(role: .destructive) { removeFromFavorites(quote) } label: {
                     Label("Löschen", systemImage: "trash")
                 }
@@ -197,6 +207,36 @@ private extension FavoritesView {
         context.insert(newQuote)
         try? context.save()
     }
+    
+    func shareQuote(_ quote: Quote) {
+        let targetSize = CGSize(width: 1024, height: 1024)
+        
+        let canvas = ShareQuoteView(
+            text: quote.text,
+            author: quote.author,
+            category: quote.category,
+            backgroundAsset: "MUSE_Share_Design",
+            canvasSize: targetSize
+        )
+        
+        if let image = ShareRenderer.render(view: canvas, size: targetSize) {
+            let caption = "\"\(quote.text)\"\n— \(quote.author)"
+            shareItems = [image, caption]
+        } else {
+            shareItems = ["\"\(quote.text)\"\n— \(quote.author)"]
+        }
+        
+        showShareSheet = true
+    }
+}
+
+// MARK: - ShareSheet Helper
+private struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 // MARK: - Add Quote Sheet
@@ -272,7 +312,6 @@ private struct AddQuoteSheet: View {
     let container = SwiftDataConfigurator.createPreviewContainer()
     let ctx = container.mainContext
     
-    // Preview-Favorit
     let previewQuote = Quote(text: "Preview-Favorit", author: "Preview", category: .motivation)
     previewQuote.isFavorite = true
     ctx.insert(previewQuote)
